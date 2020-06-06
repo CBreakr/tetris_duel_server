@@ -23,6 +23,6 @@ class Match < ApplicationRecord
     end
 
     def self.active 
-        
+        Match.where(winner_id: nil)
     end
 end

@@ -64,6 +64,14 @@ class UsersController < ApplicationController
         render json: { users: users, games:games, game_states:game_states, matches:matches, match_states:match_states }
     end
 
+    def available
+        # return all of the available users
+    end
+
+    def enter_lobby
+        # write to the ActivePlayerChannel
+    end
+
     private
     def user_params 
         puts params
