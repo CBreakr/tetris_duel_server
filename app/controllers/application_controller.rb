@@ -29,19 +29,19 @@ class ApplicationController < ActionController::API
     end
     
     def auth_header
-        # puts "headers?"
-        # puts request.headers
-        # puts request.headers['Authorization']
-        # puts "AFTER HEADER"
+        puts "headers?"
+        puts request.headers
+        puts request.headers['Authorization']
+        puts "AFTER HEADER"
         # { 'Authorization': 'Bearer <token>' }
         request.headers['Authorization']
     end
     
     def decoded_token
-        # puts "decode token"
+        puts "decode token"
         if auth_header
-            # puts "we have an auth header"
-            # puts auth_header
+            puts "we have an auth header"
+            puts auth_header
             token = auth_header.split(' ')[1]
             puts token
             # headers: { 'Authorization': 'Bearer <token>' }
@@ -66,7 +66,12 @@ class ApplicationController < ActionController::API
     end
 
     def logged_in?
-        !!current_user
+        cu = current_user
+        if cu then
+            # just update this immediately
+            cu.update({last_activity: Time.now})
+        end
+        !!cu
     end
 
     def authorized

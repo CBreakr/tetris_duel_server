@@ -50,6 +50,10 @@ ActiveRecord::Schema.define(version: 2020_06_04_042016) do
   create_table "users", force: :cascade do |t|
     t.string "name"
     t.integer "rank"
+    t.boolean "logged_in"
+    t.boolean "issued_challenge"
+    t.datetime "last_activity"
+    t.boolean "marked_inactive"
     t.string "password_digest"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false

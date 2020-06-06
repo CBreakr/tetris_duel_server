@@ -8,5 +8,7 @@ Rails.application.routes.draw do
 
   get "/all", to: "users#all"
 
+  post "/games", to: "games#create"
+
   mount ActionCable.server => '/cable'
 end

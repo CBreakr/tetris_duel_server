@@ -21,4 +21,8 @@ class Match < ApplicationRecord
     def users
         return [game_one.user, game_two.user]
     end
+
+    def self.active 
+        
+    end
 end
