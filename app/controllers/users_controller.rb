@@ -17,6 +17,8 @@ class UsersController < ApplicationController
         puts up[:password_digest]
 
         if user && user.authenticate(up[:password])
+            user.start_session
+            set_user_to_lobby(user)
             # encode token comes from ApplicationController
             puts "AUTHENTICATED"
             token = encode_token({ user_id: user.id })
@@ -35,6 +37,8 @@ class UsersController < ApplicationController
         puts "CREATED USER"
         puts user
         if user.save
+            user.start_session
+            set_user_to_lobby(user)
             token = encode_token(user_id: user.id)
             render json: { id: user.id, name: user.name, jwt: token }, status: :created
         else
@@ -44,7 +48,7 @@ class UsersController < ApplicationController
     end
 
     def logout
-
+        current_user.end_session
     end
 
     def all
@@ -66,10 +70,21 @@ class UsersController < ApplicationController
 
     def available
         # return all of the available users
+        User.all.select do |user|
+            user.in_lobby && !user.issued_challenge
+        end
     end
 
     def enter_lobby
+        cu = current_user
+        set_user_to_lobby(cu)
+    end
+
+    def set_user_to_lobby(user)
+        user.in_lobby = true
+        user.save
         # write to the ActivePlayerChannel
+        ActionCable.server.broadcast "ActivePlayerChannel", {type: "enter_lobby", message: cu}
     end
 
     private

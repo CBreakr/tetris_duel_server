@@ -1,23 +1,20 @@
 class GamesController < ApplicationController
 
     def active
-
-    end
-
-    def create
-        puts "CREATE MATCH"
-        # match = Match.create(user: current_user)
-        render json: {id: match.id}
+        # get all of the active matches
+        render json: Match.active
     end
 
     def issue_challenge
         # other user id as parameter
         # write out to the ActivePlayerChannel
+        ActionCable.server.broadcast "ActivePlayerChannel", {type: "challenge", message: {challenger: current_user, challenged: params[:id]}}
     end
 
     def reject_challenge
         # other user id as parameter
         # write out to the ActivePlayerChannel
+        ActionCable.server.broadcast "ActivePlayerChannel", {type: "reject", message: {challenger: current_user, challenged: params[:id]}}
     end
 
     def accept_challenge
@@ -25,28 +22,103 @@ class GamesController < ApplicationController
         # write out to the ActivePlayerChannel
         # write out to the ActiveMatchChannel
         # write out to the MatchChannel
+        cu = current_user
+        create(cu, params[:id])
+    end
+
+    def create(first_user, second_user_id)
+        puts "CREATE MATCH"
+        #
+        # called by match accepted?
+        #
+        # match = Match.create(user: current_user)
+        # create match
+        # create a game for each player
+        # write out to ActiveMatchChannel
+        # t.integer "game1_id"
+        # t.integer "game2_id"
+        u2 = User.find(params[:second_user_id])
+        game1 = Game.create(user: cu)
+        game2 = Game.create(user: u2)
+        match = Match.new
+        match.game_one = game1
+        match.game_two = game2
+        match.save
+
+        cu.update(in_lobby: false, issued_challenge: false)
+        u2.update(in_lobby: false, issued_challenge: false)
+
+        ActionCable.server.broadcast "ActivePlayerChannel", {type: "inactive", users: [current_user.id, params[:second_user_id]]}
+        ActionCable.server.broadcast "ActiveMatchChannel", {type: "match_created", match: match}
     end
 
     def update
-        # match id, game id, game state as parameters
+        # match id, game as parameters
         # write out to the MatchChannel
+
+        game = params[:game]
+
+        gamestate = GameState.new(game_id: game.id)
+        gamestate.board_state = game.board_state
+        gamestate.next_piece = game.next_piece
+        gamestate.move_number = game.move_number + 1
+        gamestate.is_finished = game.is_finished
+        gamestate.save
+
+        matchstate = MatchState.create(match_id: params[:id], game_state: gamestate)
+
+        match = Math.find(params[:id])
+
+        if game.is_finished then
+            match_lost(match, game.id)
+        else
+            MatchChannel.broadcast_to(match, {type:"match_state", {gamestate: game}})
+        end
+
     end
 
     def accept_handshake
         # match id, game id as parameters
-        # write out to the MatchChannel
+        # write out to the MatchChannel if both have been accepted
+
+        match = Match.find(params[:id])
+        cu = current_user
+
+        if match.game_one.user.id == cu.id then
+            match.user1_handshake = true
+        elsif match.game_two.user.id == cu.id then
+            match.user2_handshake = true
+        end
+
+        match.save
+
+        if match.user1_handshake && match.user2_handshake then
+            MatchChannel.broadcast_to(match, {type: "match_start"})
+        end
     end
 
     def concede
-        # match id as parameter
+        # match id, game_id as parameters
         # write out to the MatchChannel
         # write out to the ActiveMatchChannel
+
+        match = Match.find(params[:id])
+        match_lost(match, params[:game_id])
     end
 
-    def match_lost
-        # match id as parameter
+    def match_lost(match, game_id)
         # write out to the MatchChannel
-        # write out to the ActiveMatchChannel
+
+        losing_game = Game.find(game_id)
+
+        # setting the winner automatically sets the loser, too
+        if match.game_one.id == game_id then
+            match.winner = match.game_two.user
+        elsif match.game_two.id == game_id then
+            match.winner = match.game_one.user
+        end
+
+        MatchChannel.broadcast_to(match, {type:"match_over", message: {losing_game: game_id}})
     end
 
 end

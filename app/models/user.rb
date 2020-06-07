@@ -19,4 +19,14 @@ class User < ApplicationRecord
     def matches_won
         Match.where(winner_id: self.id)
     end
+
+    def start_session
+        self.logged_in = true
+        self.last_activity = Time.now
+    end
+
+    def end_session
+        self.logged_in = false
+        self.save
+    end
 end

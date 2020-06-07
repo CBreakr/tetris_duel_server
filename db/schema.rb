@@ -43,6 +43,8 @@ ActiveRecord::Schema.define(version: 2020_06_04_042016) do
     t.integer "loser_id"
     t.integer "game1_id"
     t.integer "game2_id"
+    t.boolean "user1_handshake"
+    t.boolean "user2_handshake"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
   end
@@ -53,6 +55,7 @@ ActiveRecord::Schema.define(version: 2020_06_04_042016) do
     t.boolean "logged_in"
     t.boolean "issued_challenge"
     t.datetime "last_activity"
+    t.boolean "in_lobby"
     t.boolean "marked_inactive"
     t.string "password_digest"
     t.datetime "created_at", precision: 6, null: false

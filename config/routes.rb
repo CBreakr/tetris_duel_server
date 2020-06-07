@@ -9,7 +9,7 @@ Rails.application.routes.draw do
   post '/users/logout', to: "users#logout"
 
   get "/users/available", to: "users#available"
-  patch "/users/:id/enter_lobby", to: "users#enter_lobby"
+  patch "/users/enter_lobby", to: "users#enter_lobby"
 
   # just for testing purposes
   get "/all", to: "users#all"
@@ -22,7 +22,7 @@ Rails.application.routes.draw do
   post "/matches/accept_challenge", to: "matches#accept_challenge"
   patch "/matches/:id", to: "matches#update"
   patch "/matches/:id/concede", to: "matches#concede"
-  patch "/matches/:id/match_lost", to: "matches#match_lost"
+  # patch "/matches/:id/match_lost", to: "matches#match_lost"
   patch "/matches/:id/accept_handshake", to: "matches#accept_handshake"
 
 end
