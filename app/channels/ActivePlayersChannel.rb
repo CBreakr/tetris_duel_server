@@ -1,7 +1,7 @@
-class ActivePlayerChannel < ApplicationCable::Channel
+class ActivePlayersChannel < ApplicationCable::Channel
     def subscribed
         puts "subscribed to active players"
-        stream_from "ActivePlayerChannel"
+        stream_from "ActivePlayersChannel"
     end
 
     def unsubscribed

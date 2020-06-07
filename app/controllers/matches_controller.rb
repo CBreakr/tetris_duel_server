@@ -8,13 +8,13 @@ class GamesController < ApplicationController
     def issue_challenge
         # other user id as parameter
         # write out to the ActivePlayerChannel
-        ActionCable.server.broadcast "ActivePlayerChannel", {type: "challenge", message: {challenger: current_user, challenged: params[:id]}}
+        ActionCable.server.broadcast "ActivePlayersChannel", {type: "challenge", message: {challenger: current_user, challenged: params[:id]}}
     end
 
     def reject_challenge
         # other user id as parameter
         # write out to the ActivePlayerChannel
-        ActionCable.server.broadcast "ActivePlayerChannel", {type: "reject", message: {challenger: current_user, challenged: params[:id]}}
+        ActionCable.server.broadcast "ActivePlayersChannel", {type: "reject", message: {challenger: current_user, challenged: params[:id]}}
     end
 
     def accept_challenge
@@ -49,7 +49,7 @@ class GamesController < ApplicationController
         u2.update(in_lobby: false, issued_challenge: false)
 
         ActionCable.server.broadcast "ActivePlayerChannel", {type: "inactive", users: [current_user.id, params[:second_user_id]]}
-        ActionCable.server.broadcast "ActiveMatchChannel", {type: "match_created", match: match}
+        ActionCable.server.broadcast "ActiveMatchesChannel", {type: "match_created", match: match}
     end
 
     def update
@@ -119,6 +119,7 @@ class GamesController < ApplicationController
         end
 
         MatchChannel.broadcast_to(match, {type:"match_over", message: {losing_game: game_id}})
+        ActionCable.server.broadcast "ActiveMatchesChannel", {type: "match_ended", match: match}
     end
 
 end

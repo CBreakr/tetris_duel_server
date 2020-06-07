@@ -60,10 +60,11 @@ class UsersController < ApplicationController
 
         ActionCable.server.broadcast 'DefaultChannel', {message:"this is a message from the default channel"}
 
-        puts "We have the data"
-        pp users
-        pp games
-        pp matches
+        ActionCable.server.broadcast "ActivePlayersChannel", {type: "challenge", message: {challenger: "ER", challenged: "ED"}}
+        ActionCable.server.broadcast "ActiveMatchesChannel", {type: "match_created", match: "a match is here!"}
+
+        firstMatch = Match.first
+        MatchChannel.broadcast_to(firstMatch, {type:"match_state", gamestate: ""})
 
         render json: { users: users, games:games, game_states:game_states, matches:matches, match_states:match_states }
     end
@@ -84,7 +85,7 @@ class UsersController < ApplicationController
         user.in_lobby = true
         user.save
         # write to the ActivePlayerChannel
-        ActionCable.server.broadcast "ActivePlayerChannel", {type: "enter_lobby", message: cu}
+        ActionCable.server.broadcast "ActivePlayersChannel", {type: "enter_lobby", message: user}
     end
 
     private
