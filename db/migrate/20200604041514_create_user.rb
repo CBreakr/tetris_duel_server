@@ -2,7 +2,7 @@ class CreateUser < ActiveRecord::Migration[6.0]
   def change
     create_table :users do |t|
       t.string :name
-      t.integer :rank
+      t.float :rank, default: 200.0
       t.boolean :logged_in
       t.boolean :issued_challenge
       t.datetime :last_activity

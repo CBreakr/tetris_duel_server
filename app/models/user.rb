@@ -8,6 +8,10 @@ class User < ApplicationRecord
 
     has_secure_password
 
+    RANK_SHIFT_CONSTANT = 30
+    RANK_EXP_DIVISOR = 50
+    MINIMUM_RANK = 200.0
+
     def matches_completed
         [self.matches_won, self.matches_lost].flatten
     end
@@ -18,6 +22,21 @@ class User < ApplicationRecord
     
     def matches_won
         Match.where(winner_id: self.id)
+    end
+
+    def update_rank(won, opponent_rank)
+        exp = (self.rank - opponent_rank)/RANK_EXP_DIVISOR
+        prob = 1/(1+ 10**exp)
+        result = won ? 1 : 0
+        self.rank += RANK_SHIFT_CONSTANT * (result - prob)
+        if self.rank < MINIMUM_RANK then
+            self.rank = MINIMUM_RANK
+        end
+        self.save
+    end
+
+    def display_rank
+        ((self.rank - MINIMUM_RANK)/5).floor
     end
 
     def start_session
