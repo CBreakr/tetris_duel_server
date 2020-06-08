@@ -7,6 +7,10 @@ class Match < ApplicationRecord
         User.find(self.winner_id)
     end
 
+    def loser 
+        User.find(self.loser_id)
+    end
+
     def winner= (user)
         self.winner_id = user.id
         users = self.users

@@ -48,4 +48,8 @@ class User < ApplicationRecord
         self.logged_in = false
         self.save
     end
+
+    def serialized
+        {id: self.id, name: self.name, rank: self.display_rank, }
+    end
 end

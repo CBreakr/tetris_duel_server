@@ -8,13 +8,13 @@ class GamesController < ApplicationController
     def issue_challenge
         # other user id as parameter
         # write out to the ActivePlayerChannel
-        ActionCable.server.broadcast "ActivePlayersChannel", {type: "challenge", message: {challenger: current_user, challenged: params[:id]}}
+        ActionCable.server.broadcast "ActivePlayersChannel", {type: "challenge", details: {challenger: current_user, challenged: params[:id]}}
     end
 
     def reject_challenge
         # other user id as parameter
         # write out to the ActivePlayerChannel
-        ActionCable.server.broadcast "ActivePlayersChannel", {type: "reject", message: {challenger: current_user, challenged: params[:id]}}
+        ActionCable.server.broadcast "ActivePlayersChannel", {type: "reject", details: {challenger: current_user, challenged: params[:id]}}
     end
 
     def accept_challenge
@@ -48,7 +48,7 @@ class GamesController < ApplicationController
         cu.update(in_lobby: false, issued_challenge: false)
         u2.update(in_lobby: false, issued_challenge: false)
 
-        ActionCable.server.broadcast "ActivePlayerChannel", {type: "inactive", users: [current_user.id, params[:second_user_id]]}
+        ActionCable.server.broadcast "ActivePlayerChannel", {type: "remove", users: [current_user.id, params[:second_user_id]]}
         ActionCable.server.broadcast "ActiveMatchesChannel", {type: "match_created", match: match}
     end
 
@@ -72,7 +72,7 @@ class GamesController < ApplicationController
         if game.is_finished then
             match_lost(match, game.id)
         else
-            MatchChannel.broadcast_to(match, {type:"match_state", {gamestate: game}})
+            MatchChannel.broadcast_to(match, {type:"match_state", gamestate: game})
         end
 
     end
@@ -118,7 +118,7 @@ class GamesController < ApplicationController
             match.winner = match.game_one.user
         end
 
-        MatchChannel.broadcast_to(match, {type:"match_over", message: {losing_game: game_id}})
+        MatchChannel.broadcast_to(match, {type:"match_over", winner_id: match.winner_id})
         ActionCable.server.broadcast "ActiveMatchesChannel", {type: "match_ended", match: match}
     end
 

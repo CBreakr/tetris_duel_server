@@ -14,8 +14,8 @@ MatchState.destroy_all
 
 puts "RUNNING"
 
-user1 = User.create!(name:"RobNot", rank: -1, password:"222")
-user2 = User.create!(name:"VMac", rank: -1, password:"222")
+user1 = User.create!(name:"RobNot", password:"222")
+user2 = User.create!(name:"VMac", password:"222")
 
 pp user2
 

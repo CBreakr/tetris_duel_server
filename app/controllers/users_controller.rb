@@ -1,6 +1,6 @@
 class UsersController < ApplicationController
 
-    skip_before_action :authorized, except: :ping
+    skip_before_action :authorized, except: [:ping, :logout]
 
     def ping
         render json: {success: true}
@@ -33,7 +33,6 @@ class UsersController < ApplicationController
         up = user_params
         puts up
         user = User.new(up)
-        user.rank = -1
         puts "CREATED USER"
         puts user
         if user.save
@@ -48,7 +47,9 @@ class UsersController < ApplicationController
     end
 
     def logout
-        current_user.end_session
+        cu = current_user
+        ActionCable.server.broadcast "ActivePlayersChannel", {type: "remove", users: [cu.id]}
+        cu.end_session
     end
 
     def all
@@ -60,7 +61,7 @@ class UsersController < ApplicationController
 
         ActionCable.server.broadcast 'DefaultChannel', {message:"this is a message from the default channel"}
 
-        ActionCable.server.broadcast "ActivePlayersChannel", {type: "challenge", message: {challenger: "ER", challenged: "ED"}}
+        ActionCable.server.broadcast "ActivePlayersChannel", {type: "challenge", details: {challenger: "ER", challenged: "ED"}}
         ActionCable.server.broadcast "ActiveMatchesChannel", {type: "match_created", match: "a match is here!"}
 
         firstMatch = Match.first
@@ -71,9 +72,19 @@ class UsersController < ApplicationController
 
     def available
         # return all of the available users
-        User.all.select do |user|
+        puts "AVAILABLE"
+        puts "AVAILABLE"
+        puts "AVAILABLE"
+        puts "AVAILABLE"
+        users_available = User.all.select do |user|
+            pp user
+            puts user.in_lobby && !user.issued_challenge
             user.in_lobby && !user.issued_challenge
+        end.map do |user|
+            user.serialized
         end
+        
+        render json: users_available
     end
 
     def enter_lobby
@@ -84,8 +95,9 @@ class UsersController < ApplicationController
     def set_user_to_lobby(user)
         user.in_lobby = true
         user.save
+        pp user
         # write to the ActivePlayerChannel
-        ActionCable.server.broadcast "ActivePlayersChannel", {type: "enter_lobby", message: user}
+        ActionCable.server.broadcast "ActivePlayersChannel", {type: "enter_lobby", player: user.serialized}
     end
 
     private
