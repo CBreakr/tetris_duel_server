@@ -1,20 +1,41 @@
-class GamesController < ApplicationController
+class MatchesController < ApplicationController
 
     def active
         # get all of the active matches
-        render json: Match.active
+        active_matches = Match.active
+        puts "ACTIVE MATCHES"
+        puts "ACTIVE MATCHES"
+        puts "ACTIVE MATCHES"
+        puts "ACTIVE MATCHES"
+        puts "ACTIVE MATCHES"
+        puts active_matches
+        render json: active_matches
     end
 
     def issue_challenge
+        puts "ISSUE CHALLENGE"
+        puts "ISSUE CHALLENGE"
+        puts "ISSUE CHALLENGE"
+        puts "ISSUE CHALLENGE"
         # other user id as parameter
         # write out to the ActivePlayerChannel
-        ActionCable.server.broadcast "ActivePlayersChannel", {type: "challenge", details: {challenger: current_user, challenged: params[:id]}}
+        ActionCable.server.broadcast "ActivePlayersChannel", {type: "challenge", details: {challenger: current_user.serialized, challenged: params[:id]}}
     end
 
     def reject_challenge
         # other user id as parameter
         # write out to the ActivePlayerChannel
-        ActionCable.server.broadcast "ActivePlayersChannel", {type: "reject", details: {challenger: current_user, challenged: params[:id]}}
+        challenger = User.find(params[:id])
+        challenger.issued_challenge = false
+        challenger.save
+        ActionCable.server.broadcast "ActivePlayersChannel", {type: "reject", details: {challenger: challenger.id}}
+    end
+
+    def cancel_challenge
+        cu = current_user
+        cu.issued_challenge = false
+        cu.save
+        ActionCable.server.broadcast "ActivePlayersChannel", {type: "cancel", details: {challenger: cu.id}}
     end
 
     def accept_challenge
@@ -22,6 +43,14 @@ class GamesController < ApplicationController
         # write out to the ActivePlayerChannel
         # write out to the ActiveMatchChannel
         # write out to the MatchChannel
+
+        puts "ACCEPT"
+        puts "ACCEPT"
+        puts "ACCEPT"
+        puts "ACCEPT"
+        puts "ACCEPT"
+        puts params
+
         cu = current_user
         create(cu, params[:id])
     end
@@ -37,19 +66,47 @@ class GamesController < ApplicationController
         # write out to ActiveMatchChannel
         # t.integer "game1_id"
         # t.integer "game2_id"
-        u2 = User.find(params[:second_user_id])
-        game1 = Game.create(user: cu)
-        game2 = Game.create(user: u2)
+        second_user = User.find(second_user_id)
+        game1 = Game.create(user: first_user)
+        game2 = Game.create(user: second_user)
         match = Match.new
         match.game_one = game1
         match.game_two = game2
         match.save
 
-        cu.update(in_lobby: false, issued_challenge: false)
-        u2.update(in_lobby: false, issued_challenge: false)
+        first_user.update(in_lobby: false, issued_challenge: false)
+        second_user.update(in_lobby: false, issued_challenge: false)
 
-        ActionCable.server.broadcast "ActivePlayerChannel", {type: "remove", users: [current_user.id, params[:second_user_id]]}
-        ActionCable.server.broadcast "ActiveMatchesChannel", {type: "match_created", match: match}
+        ActionCable.server.broadcast "ActivePlayersChannel", {type: "accept", users: [current_user.id, second_user_id], match_id: match.id}
+        ActionCable.server.broadcast "ActivePlayersChannel", {type: "remove", users: [current_user.id, second_user_id]}
+        ActionCable.server.broadcast "ActiveMatchesChannel", {type: "match_created", match: match.serialized}
+    end
+
+    def show
+
+        puts "show"
+
+        match = Match.find(params[:id])
+
+        puts "we have the match"
+        puts match
+
+        # client state
+        # match_id: null,
+        # game1_id: null,
+        # game2_id: null,
+        # user1: null,
+        # user2: null,
+        # winner_id: null
+
+        # t.integer "winner_id"
+        # t.integer "loser_id"
+        # t.integer "game1_id"
+        # t.integer "game2_id"
+
+        puts "before render"
+
+        render json: match.serialized
     end
 
     def update
@@ -119,7 +176,6 @@ class GamesController < ApplicationController
         end
 
         MatchChannel.broadcast_to(match, {type:"match_over", winner_id: match.winner_id})
-        ActionCable.server.broadcast "ActiveMatchesChannel", {type: "match_ended", match: match}
+        ActionCable.server.broadcast "ActiveMatchesChannel", {type: "match_ended", match_id: match.id}
     end
-
 end

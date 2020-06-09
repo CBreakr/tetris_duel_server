@@ -46,10 +46,12 @@ class User < ApplicationRecord
 
     def end_session
         self.logged_in = false
+        self.issued_challenge = false
+        self.in_lobby = false
         self.save
     end
 
     def serialized
-        {id: self.id, name: self.name, rank: self.display_rank, }
+        {id: self.id, name: self.name, rank: self.display_rank, issued_challenge: self.issued_challenge}
     end
 end

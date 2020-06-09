@@ -20,6 +20,8 @@ Rails.application.routes.draw do
   post "/matches/issue_challenge", to: "matches#issue_challenge"
   post "/matches/reject_challenge", to: "matches#reject_challenge"
   post "/matches/accept_challenge", to: "matches#accept_challenge"
+  post "/matches/cancel_challenge", to: "matches#cancel_challenge"
+  get "/matches/:id", to: "matches#show"
   patch "/matches/:id", to: "matches#update"
   patch "/matches/:id/concede", to: "matches#concede"
   # patch "/matches/:id/match_lost", to: "matches#match_lost"

@@ -31,6 +31,17 @@ class Match < ApplicationRecord
     end
 
     def self.active 
-        Match.where(winner_id: nil)
+        Match.where(winner_id: nil).map do |match|
+            match.serialized
+        end
+    end
+
+    def serialized
+        {   match_id: self.id,
+            game1_id: self.game1_id, game2_id: self.game2_id, 
+            user1: self.game_one.user,
+            user2: self.game_two.user,
+            winner_id: self.winner_id
+        }
     end
 end
