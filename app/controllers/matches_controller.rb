@@ -149,6 +149,13 @@ class MatchesController < ApplicationController
 
         match.save
 
+        puts "HANDSHAKE"
+        puts "HANDSHAKE"
+        puts "HANDSHAKE"
+        puts "HANDSHAKE"
+        puts match.user1_handshake 
+        puts match.user2_handshake
+
         if match.user1_handshake && match.user2_handshake then
             MatchChannel.broadcast_to(match, {type: "match_start"})
         end
