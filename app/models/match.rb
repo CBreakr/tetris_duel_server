@@ -38,7 +38,8 @@ class Match < ApplicationRecord
 
     def serialized
         {   match_id: self.id,
-            game1_id: self.game1_id, game2_id: self.game2_id, 
+            game1_id: self.game1_id, 
+            game2_id: self.game2_id, 
             user1: self.game_one.user.serialized,
             user2: self.game_two.user.serialized,
             winner_id: self.winner_id

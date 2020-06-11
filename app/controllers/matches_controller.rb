@@ -115,21 +115,39 @@ class MatchesController < ApplicationController
 
         game = params[:game]
 
-        gamestate = GameState.new(game_id: game.id)
-        gamestate.board_state = game.board_state
-        gamestate.next_piece = game.next_piece
-        gamestate.move_number = game.move_number + 1
-        gamestate.is_finished = game.is_finished
+        puts "GAME UPDATE"
+        puts "GAME UPDATE"
+        puts "GAME UPDATE"
+        puts "GAME UPDATE"
+        puts "GAME UPDATE"
+        puts game
+
+        # grid: [....]
+        # match_id: null,
+        # game_id: null,
+        # paused: false,
+        # active: null,
+        # rotation: 0,
+        # gameOver: false,
+        # timer: null,
+        # nextPiece: null,
+        # move_number: 0  
+
+        gamestate = GameState.new(game_id: game["game_id"])
+        gamestate.board_state = game["grid"]
+        gamestate.next_piece = game["nextPiece"]
+        gamestate.move_number = game["move_number"]
+        gamestate.is_finished = game["gameOver"]
         gamestate.save
 
         matchstate = MatchState.create(match_id: params[:id], game_state: gamestate)
 
-        match = Math.find(params[:id])
+        match = Match.find(params[:id])
 
-        if game.is_finished then
-            match_lost(match, game.id)
+        if gamestate.is_finished then
+            match_lost(match, game["game_id"])
         else
-            MatchChannel.broadcast_to(match, {type:"match_state", gamestate: game})
+            MatchChannel.broadcast_to(match, {type:"match_update", gamestate: game})
         end
 
     end
@@ -161,6 +179,9 @@ class MatchesController < ApplicationController
         end
     end
 
+    #
+    #
+    #
     def concede
         # match id, game_id as parameters
         # write out to the MatchChannel
@@ -170,6 +191,9 @@ class MatchesController < ApplicationController
         match_lost(match, params[:game_id])
     end
 
+    #
+    #
+    #
     def match_lost(match, game_id)
         # write out to the MatchChannel
 
@@ -182,7 +206,7 @@ class MatchesController < ApplicationController
             match.winner = match.game_one.user
         end
 
-        MatchChannel.broadcast_to(match, {type:"match_over", winner_id: match.winner_id})
+        MatchChannel.broadcast_to(match, {type:"match_ended", winner_id: match.winner_id})
         ActionCable.server.broadcast "ActiveMatchesChannel", {type: "match_ended", match_id: match.id}
     end
 end
