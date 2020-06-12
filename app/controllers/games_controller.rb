@@ -2,6 +2,7 @@ class GamesController < ApplicationController
 
     def create
         game = Game.create(user: current_user)
+        ActionCable.server.broadcast "ActivePlayersChannel", {type: "remove", users: [current_user.id]}
         render json: {id: game.id}
     end
 
