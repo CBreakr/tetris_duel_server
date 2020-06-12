@@ -49,25 +49,49 @@ class UsersController < ApplicationController
     def logout
         cu = current_user
         ActionCable.server.broadcast "ActivePlayersChannel", {type: "remove", users: [cu.id]}
-        cu.end_session
+        end_active_match(cu)
+        cu.end_session        
+    end
+
+    def end_active_match(user)
+        # if the user is in a match, they lose
+        # mark the match as over, send the proper channel messages
+        active = Match.where(winner_id: nil)
+
+        current_match = nil
+        current_game = nil
+
+        current = active.each do |match|
+            if match.game_one.user.id == user.id then
+                current_match = match
+                current_game = match.game_one
+            elsif match.game_two.user.id == user.id then
+                current_match = match
+                current_game = match.game_two
+            end
+        end
+
+        if current_match then
+            current_match.process_match_lost(current_game.id)
+        end
     end
 
     def all
-        users = User.all
-        games = Game.all
-        game_states = GameState.all
-        matches = Match.all
-        match_states = MatchState.all
+        # users = User.all
+        # games = Game.all
+        # game_states = GameState.all
+        # matches = Match.all
+        # match_states = MatchState.all
 
-        ActionCable.server.broadcast 'DefaultChannel', {message:"this is a message from the default channel"}
+        # ActionCable.server.broadcast 'DefaultChannel', {message:"this is a message from the default channel"}
 
-        ActionCable.server.broadcast "ActivePlayersChannel", {type: "challenge", details: {challenger: "ER", challenged: "ED"}}
-        ActionCable.server.broadcast "ActiveMatchesChannel", {type: "match_created", match: "a match is here!"}
+        # ActionCable.server.broadcast "ActivePlayersChannel", {type: "challenge", details: {challenger: "ER", challenged: "ED"}}
+        # ActionCable.server.broadcast "ActiveMatchesChannel", {type: "match_created", match: "a match is here!"}
 
-        firstMatch = Match.first
-        MatchChannel.broadcast_to(firstMatch, {type:"match_state", gamestate: ""})
+        # firstMatch = Match.first
+        # MatchChannel.broadcast_to(firstMatch, {type:"match_state", gamestate: ""})
 
-        render json: { users: users, games:games, game_states:game_states, matches:matches, match_states:match_states }
+        # render json: { users: users, games:games, game_states:game_states, matches:matches, match_states:match_states }
     end
 
     def available
@@ -83,7 +107,7 @@ class UsersController < ApplicationController
         end.map do |user|
             user.serialized
         end
-        
+
         render json: users_available
     end
 

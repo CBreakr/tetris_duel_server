@@ -195,18 +195,6 @@ class MatchesController < ApplicationController
     #
     #
     def match_lost(match, game_id)
-        # write out to the MatchChannel
-
-        losing_game = Game.find(game_id)
-
-        # setting the winner automatically sets the loser, too
-        if match.game_one.id == game_id then
-            match.winner = match.game_two.user
-        elsif match.game_two.id == game_id then
-            match.winner = match.game_one.user
-        end
-
-        MatchChannel.broadcast_to(match, {type:"match_ended", winner_id: match.winner_id})
-        ActionCable.server.broadcast "ActiveMatchesChannel", {type: "match_ended", match_id: match.id}
+        match.process_match_lost(game_id)
     end
 end

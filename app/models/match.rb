@@ -45,4 +45,18 @@ class Match < ApplicationRecord
             winner_id: self.winner_id
         }
     end
+
+    def process_match_lost(game_id)
+        losing_game = Game.find(game_id)
+
+        # setting the winner automatically sets the loser, too
+        if self.game_one.id == game_id then
+            self.winner = self.game_two.user
+        elsif self.game_two.id == game_id then
+            self.winner = self.game_one.user
+        end
+
+        MatchChannel.broadcast_to(self, {type:"match_ended", winner_id: self.winner_id})
+        ActionCable.server.broadcast "ActiveMatchesChannel", {type: "match_ended", match_id: self.id}
+    end
 end
