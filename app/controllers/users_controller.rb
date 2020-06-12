@@ -6,6 +6,17 @@ class UsersController < ApplicationController
         render json: {success: true}
     end
 
+    def show
+        puts "SHOW USER"
+        puts "SHOW USER"
+        puts "SHOW USER"
+        puts "SHOW USER"
+        puts params[:id]
+        user = User.find(params[:id])
+        puts user
+        render json: user.serialized
+    end
+
     def login
         user = User.find_by(name: user_params[:name])
         #User#authenticate comes from BCrypt

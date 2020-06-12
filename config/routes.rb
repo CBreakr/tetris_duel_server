@@ -11,6 +11,8 @@ Rails.application.routes.draw do
   get "/users/available", to: "users#available"
   patch "/users/enter_lobby", to: "users#enter_lobby"
 
+  get "/users/:id", to: "users#show"
+
   # just for testing purposes
   get "/all", to: "users#all"
 
