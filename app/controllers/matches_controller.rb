@@ -140,6 +140,17 @@ class MatchesController < ApplicationController
         gamestate.is_finished = game["gameOver"]
         gamestate.save
 
+        penaltyRows = game["cleared"]
+        if penaltyRows && penaltyRows.count > 0 then
+            penaltyRows = penaltyRows.count - 1
+        else
+            penaltyRows = 0
+        end
+
+        puts "PENALTY ROWS"
+        puts "PENALTY ROWS"
+        puts penaltyRows
+
         matchstate = MatchState.create(match_id: params[:id], game_state: gamestate)
 
         match = Match.find(params[:id])
@@ -147,7 +158,7 @@ class MatchesController < ApplicationController
         if gamestate.is_finished then
             match_lost(match, game["game_id"])
         else
-            MatchChannel.broadcast_to(match, {type:"match_update", gamestate: game})
+            MatchChannel.broadcast_to(match, {type:"match_update", gamestate: game, penaltyRows: penaltyRows})
         end
 
     end
