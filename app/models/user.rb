@@ -8,8 +8,8 @@ class User < ApplicationRecord
 
     has_secure_password
 
-    RANK_SHIFT_CONSTANT = 30
-    RANK_EXP_DIVISOR = 50
+    RANK_SHIFT_CONSTANT = 20
+    RANK_EXP_DIVISOR = 100
     MINIMUM_RANK = 200.0
 
     def matches_completed
@@ -25,18 +25,59 @@ class User < ApplicationRecord
     end
 
     def update_rank(won, opponent_rank)
+        puts "UPDATE RANK"
+        puts "UPDATE RANK"
+        puts "UPDATE RANK"
+        puts "UPDATE RANK"
+        puts "UPDATE RANK"
+        puts "UPDATE RANK"
+        puts "UPDATE RANK"
+        puts "UPDATE RANK"
+        puts "UPDATE RANK"
+        puts "UPDATE RANK"
+        puts "UPDATE RANK"
+        puts "UPDATE RANK"
+        puts "UPDATE RANK"
+        puts "UPDATE RANK"
+        puts "UPDATE RANK"
+        puts "UPDATE RANK"
+        puts "UPDATE RANK"
+        puts "UPDATE RANK"
+        puts "UPDATE RANK"
+        puts "UPDATE RANK"
+        puts "UPDATE RANK"
+        puts won
+        puts opponent_rank
+
+        diff = (self.rank - opponent_rank).abs
+
         exp = (self.rank - opponent_rank)/RANK_EXP_DIVISOR
-        prob = 1/(1+ 10**exp)
+        prob = 1 - 1/(1+ 10**exp)
         result = won ? 1 : 0
-        self.rank += RANK_SHIFT_CONSTANT * (result - prob)
+
+        puts exp
+        puts prob
+        puts result
+
+        # I want to take the value here and extend it base on the the gap
+        # so the larger the gap, the bigger the potential shift
+        factor = Math.log(diff + 30, 10)/Math.log(30,10)
+
+        self.rank += RANK_SHIFT_CONSTANT * (result - prob) * factor
         if self.rank < MINIMUM_RANK then
             self.rank = MINIMUM_RANK
         end
+
+        puts self.rank
+        puts "END UPDATE"
+        puts "END UPDATE"
+
         self.save
     end
 
     def display_rank
-        ((self.rank - MINIMUM_RANK)/5).floor
+        ((self.rank - MINIMUM_RANK)/4).floor + 10
+        # self.rank
     end
 
     def start_session

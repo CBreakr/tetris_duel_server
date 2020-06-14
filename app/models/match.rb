@@ -20,8 +20,11 @@ class Match < ApplicationRecord
             self.loser_id = users[0].id
         end
 
-        self.winner.update_rank(true, self.loser.rank)
-        self.loser.update_rank(false, self.winner.rank)
+        winner_rank = self.winner.rank
+        loser_rank = self.loser.rank
+
+        self.winner.update_rank(true, loser_rank)
+        self.loser.update_rank(false, winner_rank)
 
         self.save
     end
