@@ -138,7 +138,7 @@ class MatchesController < ApplicationController
         gamestate.next_piece = game["nextPiece"]
         gamestate.move_number = game["move_number"]
         gamestate.is_finished = game["gameOver"]
-        gamestate.save
+        # gamestate.save
 
         penaltyRows = game["cleared"]
         if penaltyRows && penaltyRows.count > 0 then
@@ -151,7 +151,7 @@ class MatchesController < ApplicationController
         puts "PENALTY ROWS"
         puts penaltyRows
 
-        matchstate = MatchState.create(match_id: params[:id], game_state: gamestate)
+        # matchstate = MatchState.create(match_id: params[:id], game_state: gamestate)
 
         match = Match.find(params[:id])
 
