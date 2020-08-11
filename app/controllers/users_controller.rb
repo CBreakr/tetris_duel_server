@@ -114,7 +114,7 @@ class UsersController < ApplicationController
         users_available = User.all.select do |user|
             pp user
             puts user.in_lobby && !user.issued_challenge
-            user.in_lobby && !user.issued_challenge
+            user.in_lobby && !user.issued_challenge && user.last_activity > (DateTime.now - 1.minutes)
         end.map do |user|
             user.serialized
         end
@@ -129,6 +129,7 @@ class UsersController < ApplicationController
 
     def set_user_to_lobby(user)
         user.in_lobby = true
+        user.last_activity = DateTime.now
         user.save
         pp user
         # write to the ActivePlayerChannel

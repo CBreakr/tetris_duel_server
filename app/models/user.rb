@@ -82,7 +82,7 @@ class User < ApplicationRecord
 
     def start_session
         self.logged_in = true
-        self.last_activity = Time.now
+        self.last_activity = DateTime.now
     end
 
     def end_session

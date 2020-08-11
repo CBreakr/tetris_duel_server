@@ -17,6 +17,9 @@ class MatchesController < ApplicationController
         puts "ISSUE CHALLENGE"
         puts "ISSUE CHALLENGE"
         puts "ISSUE CHALLENGE"
+
+        current_user.last_activity = DateTime.now
+        current_user.save
         # other user id as parameter
         # write out to the ActivePlayerChannel
         ActionCable.server.broadcast "ActivePlayersChannel", {type: "challenge", details: {challenger: current_user.serialized, challenged: params[:id]}}
@@ -27,6 +30,7 @@ class MatchesController < ApplicationController
         # write out to the ActivePlayerChannel
         challenger = User.find(params[:id])
         challenger.issued_challenge = false
+        chalenger.last_activity = DateTime.now unless params[:auto]
         challenger.save
         ActionCable.server.broadcast "ActivePlayersChannel", {type: "reject", details: {challenger: challenger.id}}
     end
@@ -34,6 +38,7 @@ class MatchesController < ApplicationController
     def cancel_challenge
         cu = current_user
         cu.issued_challenge = false
+        cu.last_activity = DateTime.now
         cu.save
         ActionCable.server.broadcast "ActivePlayersChannel", {type: "cancel", details: {challenger: cu.id}}
     end
@@ -52,6 +57,9 @@ class MatchesController < ApplicationController
         puts params
 
         cu = current_user
+        cu.last_activity = DateTime.now
+        cu.save
+
         create(cu, params[:id])
     end
 
