@@ -12,6 +12,8 @@ class User < ApplicationRecord
     RANK_EXP_DIVISOR = 100
     MINIMUM_RANK = 200.0
 
+    ACTIVE_TIMEOUT_MINUTES = 5
+
     def matches_completed
         [self.matches_won, self.matches_lost].flatten
     end
