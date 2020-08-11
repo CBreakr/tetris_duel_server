@@ -113,8 +113,8 @@ class UsersController < ApplicationController
         puts "AVAILABLE"
         users_available = User.all.select do |user|
             pp user
-            puts user.in_lobby && !user.issued_challenge
-            user.in_lobby && !user.issued_challenge && user.last_activity > (DateTime.now - User.ACTIVE_TIMEOUT_MINUTES.minutes)
+            # puts user.in_lobby && !user.issued_challenge
+            user.in_lobby && !user.issued_challenge && user.last_activity > (DateTime.now - User::ACTIVE_TIMEOUT_MINUTES.minutes)
         end.map do |user|
             user.serialized
         end
